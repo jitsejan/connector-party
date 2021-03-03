@@ -11,6 +11,5 @@ def main():
     boards = jr.get_boards()
     print(boards)
 
-
 if __name__ == "__main__":
     main()
