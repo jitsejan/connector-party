@@ -5,7 +5,7 @@ from requests import Session
 from requests.auth import HTTPBasicAuth
 from requests.structures import CaseInsensitiveDict
 
-from schemas import JiraProject
+from schemas import JiraBoard, JiraProject
 
 
 class JiraRetriever:
@@ -46,12 +46,22 @@ class JiraRetriever:
             result_list.extend(response["values"])
         return result_list
 
-    def get_projects(self) -> List[JiraProject]:
-        url = f"{self.url}/3/project/search"
-        data = self._get_paginated_json_data(url=url)
+    def get_boards(self):
+        url = f"{self.url}/rest/agile/1.0/board"
         return [
-            JiraProject(id=int(item["id"]), key=item["key"], a=item["name"])
-            for item in data
+            JiraBoard(
+                id=int(item["id"]),
+                name=item["name"],
+                project_key=item["location"]["projectKey"],
+            )
+            for item in self._get_paginated_json_data(url=url)
+        ]
+
+    def get_projects(self) -> List[JiraProject]:
+        url = f"{self.url}/rest/api/3/project/search"
+        return [
+            JiraProject(id=int(item["id"]), key=item["key"], name=item["name"])
+            for item in self._get_paginated_json_data(url=url)
         ]
 
     @property
@@ -72,7 +82,7 @@ class JiraRetriever:
 
     @property
     def url(self) -> str:
-        return f"{os.getenv('JIRA_URL')}/rest/api/"
+        return os.getenv("JIRA_URL")
 
     @property
     def user(self) -> Optional[str]:
