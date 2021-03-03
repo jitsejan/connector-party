@@ -1,8 +1,8 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 from datetime import datetime
 
-@dataclass
-class JiraBoard:
+
+class JiraBoard(BaseModel):
     """Class for the Jira Board."""
 
     id: int
@@ -10,8 +10,7 @@ class JiraBoard:
     project_key: str
 
 
-@dataclass
-class JiraProject:
+class JiraProject(BaseModel):
     """Class for the Jira Project."""
 
     id: int
@@ -19,13 +18,13 @@ class JiraProject:
     name: str
 
 
-@dataclass
-class JiraSprint:
+class JiraSprint(BaseModel):
     """ Class for the Jira Sprint."""
 
     board_id: int
-    id : int
+    id: int
     name: str
     state: str
     start_date: datetime
     end_date: datetime
+    complete_date: datetime = None

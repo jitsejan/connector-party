@@ -12,5 +12,6 @@ def main():
     print(board.id)
     print(jr.get_sprints_for_board(board))
 
+
 if __name__ == "__main__":
     main()
