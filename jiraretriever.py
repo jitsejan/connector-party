@@ -1,9 +1,11 @@
 import os
+from typing import Dict, List, Optional
+
 from requests import Session
 from requests.auth import HTTPBasicAuth
 from requests.structures import CaseInsensitiveDict
+
 from schemas import JiraProject
-from typing import Dict, List, Optional
 
 
 class JiraRetriever:
