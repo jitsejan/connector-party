@@ -10,7 +10,7 @@ def main():
     # print(projects)
     board = jr.get_board_for_project_key()
     print(board.id)
-
+    print(jr.get_sprints_for_board(board))
 
 if __name__ == "__main__":
     main()

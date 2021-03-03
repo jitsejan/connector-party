@@ -5,8 +5,8 @@ from requests import Session
 from requests.auth import HTTPBasicAuth
 from requests.structures import CaseInsensitiveDict
 
-from schemas import JiraBoard, JiraProject
-
+from schemas import JiraBoard, JiraProject, JiraSprint
+from dateutil.parser import parse
 
 class JiraRetriever:
     MAX_RESULTS = 100
@@ -24,9 +24,9 @@ class JiraRetriever:
         return session
 
     def _get_num_results(self, url: str) -> int:
-        params = {"MaxResults": 0}
+        params = {"maxResults": 0}
         response = self._get_json_data_for_url(url, params)
-        return response["total"]
+        return response.get("total", 1)
 
     def _get_json_data_for_url(self, url: str, params: Dict = {}) -> Dict:
         return self.session.get(url=url, params=params).json()
@@ -70,6 +70,19 @@ class JiraRetriever:
         if not project_key:
             project_key = self.project_key
         return next((b for b in self.boards if b.project_key == project_key), None)
+
+    def get_sprints_for_board(self, board: JiraBoard):
+        url = f"{self.url}/rest/agile/1.0/board/{board.id}/sprint"
+        return [
+            JiraSprint(
+                board_id=item.get("originBoardId"),
+                id=item.get("id"),
+                name=item.get("name"),
+                state=item.get("state"),
+                start_date=parse(item.get("startDate")),
+                end_date=parse(item.get("endDate"))
+            )
+            for item in self._get_paginated_json_data(url=url)]
 
     @property
     def api_key(self) -> Optional[str]:
