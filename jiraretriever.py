@@ -11,12 +11,12 @@ from schemas import JiraBoard, JiraProject
 class JiraRetriever:
     MAX_RESULTS = 100
 
-    def __init__(self, project: str):
-        self._boards: List[JiraBoard] = []
-        self._projects: List[JiraProject] = []
-        self._project = project
+    def __init__(self, project_key: str):
+        self._project_key = project_key
         self._session = self._get_session()
-
+        self._boards = self._get_boards()
+        self._projects = self._get_projects()
+        
     def _get_session(self) -> Session:
         session = Session()
         session.headers = self.headers
@@ -48,30 +48,28 @@ class JiraRetriever:
             result_list.extend(response["values"])
         return result_list
 
-    def get_boards(self):
-        if not self.boards:
-            url = f"{self.url}/rest/agile/1.0/board"
-            self.boards = [
-                JiraBoard(
-                    id=int(item["id"]),
-                    name=item["name"],
-                    project_key=item["location"]["projectKey"],
-                )
-                for item in self._get_paginated_json_data(url=url)
-            ]
-        return self.boards
+    def _get_boards(self):
+        url = f"{self.url}/rest/agile/1.0/board"
+        return [
+            JiraBoard(
+                id=int(item["id"]),
+                name=item["name"],
+                project_key=item["location"]["projectKey"],
+            )
+            for item in self._get_paginated_json_data(url=url)
+        ]
 
-    def get_projects(self) -> List[JiraProject]:
-        if not self.projects:
-            url = f"{self.url}/rest/api/3/project/search"
-            self.projects = [
-                JiraProject(id=int(item["id"]), key=item["key"], name=item["name"])
-                for item in self._get_paginated_json_data(url=url)
-            ]
-        return self.projects
+    def _get_projects(self) -> List[JiraProject]:
+        url = f"{self.url}/rest/api/3/project/search"
+        return [
+            JiraProject(id=int(item["id"]), key=item["key"], name=item["name"])
+            for item in self._get_paginated_json_data(url=url)
+        ]
 
-    def get_board_for_project(self, project=None):
-        return 0
+    def get_board_for_project_key(self, project_key: str = None) -> Optional[JiraBoard]:
+        if not project_key:
+            project_key = self.project_key
+        return next((b for b in self.boards if b.project_key == project_key), None)
 
     @property
     def api_key(self) -> Optional[str]:
@@ -81,25 +79,17 @@ class JiraRetriever:
     def boards(self) -> List[JiraBoard]:
         return self._boards
 
-    @boards.setter
-    def boards(self, value):
-        self._boards = value
-
     @property
     def headers(self) -> CaseInsensitiveDict:
         return CaseInsensitiveDict({"Accept": "application/json"})
 
     @property
-    def project(self) -> str:
-        return self._project
+    def project_key(self) -> str:
+        return self._project_key
 
     @property
     def projects(self) -> List[JiraProject]:
         return self._projects
-
-    @projects.setter
-    def projects(self, value):
-        self._projects = value
 
     @property
     def session(self) -> Session:
