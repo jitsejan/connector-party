@@ -1,12 +1,11 @@
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from requests import Session
 from requests.auth import HTTPBasicAuth
 from requests.structures import CaseInsensitiveDict
 
 from schemas import JiraBoard, JiraProject, JiraSprint
-from dateutil.parser import parse
 
 
 class JiraRetriever:
@@ -17,6 +16,7 @@ class JiraRetriever:
         self._session = self._get_session()
         self._boards = self._get_boards()
         self._projects = self._get_projects()
+        self._project = self.get_project_for_project_key()
 
     def _get_session(self) -> Session:
         session = Session()
@@ -32,7 +32,7 @@ class JiraRetriever:
     def _get_json_data_for_url(self, url: str, params: Dict = {}) -> Dict:
         return self.session.get(url=url, params=params).json()
 
-    def _get_paginated_json_data(self, url: str) -> List[Dict]:
+    def _get_paginated_json_data(self, url: str, key: str = "values") -> List[Dict]:
         num_results = self._get_num_results(url=url)
         result_list = []
         params = {
@@ -46,10 +46,10 @@ class JiraRetriever:
                 }
             )
             response = self._get_json_data_for_url(url=url, params=params)
-            result_list.extend(response["values"])
+            result_list.extend(response[key])
         return result_list
 
-    def _get_boards(self):
+    def _get_boards(self) -> List[JiraBoard]:
         url = f"{self.url}/rest/agile/1.0/board"
         return [
             JiraBoard(
@@ -67,12 +67,27 @@ class JiraRetriever:
             for item in self._get_paginated_json_data(url=url)
         ]
 
-    def get_board_for_project_key(self, project_key: str = None) -> Optional[JiraBoard]:
+    def get_board_for_project_key(
+        self, project_key: str = None
+    ) -> Union[JiraBoard, None]:
         if not project_key:
             project_key = self.project_key
         return next((b for b in self.boards if b.project_key == project_key), None)
 
-    def get_sprints_for_board(self, board: JiraBoard):
+    def get_project_for_project_key(
+        self, project_key: str = None
+    ) -> Union[JiraProject, None]:
+        if not project_key:
+            project_key = self.project_key
+        return next((p for p in self.projects if p.key == project_key), None)
+
+    def get_issues_for_project(self, project: JiraProject = None):
+        if not project:
+            project = self.project
+        url = f"{self.url}/rest/api/2/search?jql=project={project.key}"
+        return self._get_paginated_json_data(url=url, key="issues")
+
+    def get_sprints_for_board(self, board: JiraBoard) -> List[JiraSprint]:
         url = f"{self.url}/rest/agile/1.0/board/{board.id}/sprint"
         return [
             JiraSprint(
@@ -80,11 +95,9 @@ class JiraRetriever:
                 id=item.get("id"),
                 name=item.get("name"),
                 state=item.get("state"),
-                start_date=parse(item.get("startDate")),
-                end_date=parse(item.get("endDate")),
-                complete_date=parse(item.get("completeDate"))
-                if item.get("completeDate")
-                else None,
+                start_date=item.get("startDate"),
+                end_date=item.get("endDate"),
+                complete_date=item.get("completeDate"),
             )
             for item in self._get_paginated_json_data(url=url)
         ]
@@ -104,6 +117,10 @@ class JiraRetriever:
     @property
     def project_key(self) -> str:
         return self._project_key
+
+    @property
+    def project(self) -> JiraProject:
+        return self._project
 
     @property
     def projects(self) -> List[JiraProject]:

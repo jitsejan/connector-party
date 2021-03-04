@@ -23,3 +23,8 @@ from jiraretriever import JiraRetriever
 jr = JiraRetriever(project="DATA")
 
 ```
+
+## Personal objectives
+
+- Learn how to make a Python package and use it in a different repository
+- Improve my knowledge on Pydantic and type hinting

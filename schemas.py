@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel
 
 
 class JiraBoard(BaseModel):
@@ -27,4 +29,4 @@ class JiraSprint(BaseModel):
     state: str
     start_date: datetime
     end_date: datetime
-    complete_date: datetime = None
+    complete_date: Optional[datetime]
