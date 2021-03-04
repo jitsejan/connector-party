@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, PositiveInt, constr
+from pydantic import BaseModel, PositiveInt, Field
 
 
 class JiraBoard(BaseModel):
@@ -26,7 +26,7 @@ class JiraIssue(BaseModel):
     """Class for a Jira Issue."""
 
     id: PositiveInt
-    key: constr(regex=r"^[\w]*-[\d]*$")
+    key: str = Field(regex=r"^[\w]*-[\d]*$")
     description: Optional[str]
     summmary: Optional[str]
     estimate: Optional[str]
