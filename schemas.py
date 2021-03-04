@@ -1,30 +1,51 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PositiveInt, constr
 
 
 class JiraBoard(BaseModel):
-    """Class for the Jira Board."""
+    """Class for a Jira Board."""
 
     id: int
     name: str
     project_key: str
 
 
-class JiraProject(BaseModel):
-    """Class for the Jira Project."""
+class JiraHistory(BaseModel):
+    """Class for a Jira history item."""
 
-    id: int
+    author: str
+    created: datetime
+    field: str
+    old: Optional[str]
+    new: Optional[str]
+
+
+class JiraIssue(BaseModel):
+    """Class for a Jira Issue."""
+
+    id: PositiveInt
+    key: constr(regex=r"^[\w]*-[\d]*$")
+    description: Optional[str]
+    summmary: Optional[str]
+    estimate: Optional[str]
+    histories: Optional[List[JiraHistory]]
+
+
+class JiraProject(BaseModel):
+    """Class for a Jira Project."""
+
+    id: PositiveInt
     key: str
     name: str
 
 
 class JiraSprint(BaseModel):
-    """ Class for the Jira Sprint."""
+    """ Class for a Jira Sprint."""
 
-    board_id: int
-    id: int
+    board_id: PositiveInt
+    id: PositiveInt
     name: str
     state: str
     start_date: datetime

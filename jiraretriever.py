@@ -5,11 +5,12 @@ from requests import Session
 from requests.auth import HTTPBasicAuth
 from requests.structures import CaseInsensitiveDict
 
-from schemas import JiraBoard, JiraProject, JiraSprint
+from schemas import JiraBoard, JiraHistory, JiraIssue, JiraProject, JiraSprint
 
 
 class JiraRetriever:
     MAX_RESULTS = 100
+    ESTIMATE_FIELD = "customfield_11715"
 
     def __init__(self, project_key: str):
         self._project_key = project_key
@@ -32,13 +33,16 @@ class JiraRetriever:
     def _get_json_data_for_url(self, url: str, params: Dict = {}) -> Dict:
         return self.session.get(url=url, params=params).json()
 
-    def _get_paginated_json_data(self, url: str, key: str = "values") -> List[Dict]:
+    def _get_paginated_json_data(
+        self, url: str, key: str = "values", extra_params: dict = {}
+    ) -> List[Dict]:
         num_results = self._get_num_results(url=url)
         result_list = []
         params = {
             "maxResults": self.MAX_RESULTS,
             "startAt": 0,
         }
+        params = params | extra_params
         for start in range(0, num_results, self.MAX_RESULTS):
             params.update(
                 {
@@ -81,11 +85,40 @@ class JiraRetriever:
             project_key = self.project_key
         return next((p for p in self.projects if p.key == project_key), None)
 
-    def get_issues_for_project(self, project: JiraProject = None):
+    @classmethod
+    def _convert_histories(cls, item: Dict) -> List[JiraHistory]:
+        try:
+            histories = item.get("changelog").get("histories")
+        except:
+            return []
+        else:
+            return [
+                JiraHistory(
+                    author=h.get("author").get("displayName"),
+                    created=h.get("created"),
+                    field=elem.get("field"),
+                    old=elem.get("fromString"),
+                    new=elem.get("toString"),
+                ) for h in histories for elem in h.get("items")]
+
+    def get_issues_for_project(self, project: JiraProject = None) -> List[JiraIssue]:
+        extra_params = {"expand": "changelog"}
         if not project:
             project = self.project
         url = f"{self.url}/rest/api/2/search?jql=project={project.key}"
-        return self._get_paginated_json_data(url=url, key="issues")
+        return [
+            JiraIssue(
+                id=item.get("id"),
+                key=item.get("key"),
+                description=item.get("fields").get("description"),
+                summary=item.get("fields").get("summary"),
+                estimate=item.get("fields").get(self.ESTIMATE_FIELD),
+                histories=self._convert_histories(item),
+            )
+            for item in self._get_paginated_json_data(
+                url=url, key="issues", extra_params=extra_params
+            )
+        ]
 
     def get_sprints_for_board(self, board: JiraBoard) -> List[JiraSprint]:
         url = f"{self.url}/rest/agile/1.0/board/{board.id}/sprint"

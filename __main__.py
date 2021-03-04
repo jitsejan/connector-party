@@ -13,7 +13,9 @@ def main() -> None:
     # print(jr.get_sprints_for_board(board))
     print(jr.project)
     issues = jr.get_issues_for_project()
-    print(issues[0])
+    print(issues[0].dict())
+    print(issues[10].dict())
+
 
 if __name__ == "__main__":
     main()
