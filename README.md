@@ -1,4 +1,5 @@
 # connector-party
+
 This repository contains connectors for third parties.
 
 - Jira
@@ -24,7 +25,15 @@ jr = JiraRetriever(project="DATA")
 
 ```
 
+The retriever currently has an interface to return **sprints** and **issues**. Note that for the sprints retrieval a board needs to be provided. For the issues it will assume the project that is used in the initialization of the class.
+
+```python
+board = jr.get_board_for_project_key()
+sprints = jr.get_sprints_for_board(board)
+issues = jr.get_issues_for_project()
+```
+
 ## Personal objectives
 
-- Learn how to make a Python package and use it in a different repository
+- Learn how to make a Python package and use that package in a different repository
 - Improve my knowledge on Pydantic and type hinting
