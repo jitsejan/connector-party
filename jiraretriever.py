@@ -99,7 +99,10 @@ class JiraRetriever:
                     field=elem.get("field"),
                     old=elem.get("fromString"),
                     new=elem.get("toString"),
-                ) for h in histories for elem in h.get("items")]
+                )
+                for h in histories
+                for elem in h.get("items")
+            ]
 
     def get_issues_for_project(self, project: JiraProject = None) -> List[JiraIssue]:
         extra_params = {"expand": "changelog"}
