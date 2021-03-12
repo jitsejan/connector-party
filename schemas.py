@@ -27,6 +27,7 @@ class JiraIssue(BaseModel):
 
     id: PositiveInt
     key: str = Field(regex=r"^[\w]*-[\d]*$")
+    issuetype: str
     description: Optional[str]
     summmary: Optional[str]
     estimate: Optional[str]
