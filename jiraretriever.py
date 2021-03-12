@@ -89,7 +89,7 @@ class JiraRetriever:
     def _convert_histories(cls, item: Dict) -> List[JiraHistory]:
         try:
             histories = item.get("changelog").get("histories")
-        except:
+        except Exception:
             return []
         else:
             return [
@@ -117,6 +117,25 @@ class JiraRetriever:
                 summary=item.get("fields").get("summary"),
                 estimate=item.get("fields").get(self.ESTIMATE_FIELD),
                 histories=self._convert_histories(item),
+                project=project.key,
+            )
+            for item in self._get_paginated_json_data(
+                url=url, key="issues", extra_params=extra_params
+            )
+        ]
+
+    def get_issues_for_sprint(self, sprint: JiraSprint) -> List[JiraIssue]:
+        extra_params = {"expand": "changelog"}
+        url = f"{self.url}/rest/agile/1.0/sprint/{sprint.id}/issue"
+        return [
+            JiraIssue(
+                id=item.get("id"),
+                key=item.get("key"),
+                description=item.get("fields").get("description"),
+                summary=item.get("fields").get("summary"),
+                estimate=item.get("fields").get(self.ESTIMATE_FIELD),
+                histories=self._convert_histories(item),
+                sprint=sprint.name,
             )
             for item in self._get_paginated_json_data(
                 url=url, key="issues", extra_params=extra_params

@@ -31,6 +31,8 @@ class JiraIssue(BaseModel):
     summmary: Optional[str]
     estimate: Optional[str]
     histories: Optional[List[JiraHistory]]
+    project: Optional[str]
+    sprint: Optional[str]
 
 
 class JiraProject(BaseModel):
@@ -48,6 +50,6 @@ class JiraSprint(BaseModel):
     id: PositiveInt
     name: str
     state: str
-    start_date: datetime
-    end_date: datetime
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
     complete_date: Optional[datetime]
