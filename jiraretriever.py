@@ -113,6 +113,7 @@ class JiraRetriever:
             JiraIssue(
                 id=item.get("id"),
                 key=item.get("key"),
+                issuetype=item.get("fields").get("issuetype").get("name"),
                 description=item.get("fields").get("description"),
                 summary=item.get("fields").get("summary"),
                 estimate=item.get("fields").get(self.ESTIMATE_FIELD),
@@ -131,6 +132,7 @@ class JiraRetriever:
             JiraIssue(
                 id=item.get("id"),
                 key=item.get("key"),
+                issuetype=item.get("fields").get("issuetype").get("name"),
                 description=item.get("fields").get("description"),
                 summary=item.get("fields").get("summary"),
                 estimate=item.get("fields").get(self.ESTIMATE_FIELD),
