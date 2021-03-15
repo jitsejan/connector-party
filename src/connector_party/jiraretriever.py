@@ -1,6 +1,7 @@
 import os
 from typing import Dict, List, Optional, Union
 
+from pandas import DataFrame
 from requests import Session
 from requests.auth import HTTPBasicAuth
 from requests.structures import CaseInsensitiveDict
@@ -115,6 +116,7 @@ class JiraRetriever:
                 key=item.get("key"),
                 issuetype=item.get("fields").get("issuetype").get("name"),
                 description=item.get("fields").get("description"),
+                created=item.get("fields").get("created"),
                 summary=item.get("fields").get("summary"),
                 estimate=item.get("fields").get(self.ESTIMATE_FIELD),
                 histories=self._convert_histories(item),
@@ -125,6 +127,9 @@ class JiraRetriever:
             )
         ]
 
+    def get_issue_frame_for_project(self, project: JiraProject = None) -> DataFrame:
+        return DataFrame([i.dict() for i in self.get_issues_for_project(project)])
+
     def get_issues_for_sprint(self, sprint: JiraSprint) -> List[JiraIssue]:
         extra_params = {"expand": "changelog"}
         url = f"{self.url}/rest/agile/1.0/sprint/{sprint.id}/issue"
@@ -134,9 +139,11 @@ class JiraRetriever:
                 key=item.get("key"),
                 issuetype=item.get("fields").get("issuetype").get("name"),
                 description=item.get("fields").get("description"),
+                created=item.get("fields").get("created"),
                 summary=item.get("fields").get("summary"),
                 estimate=item.get("fields").get(self.ESTIMATE_FIELD),
                 histories=self._convert_histories(item),
+                project=item.get("fields").get("project").get("key"),
                 sprint=sprint.name,
             )
             for item in self._get_paginated_json_data(
@@ -158,6 +165,17 @@ class JiraRetriever:
             )
             for item in self._get_paginated_json_data(url=url)
         ]
+
+    def get_issues_for_all_sprints(self) -> List[JiraIssue]:
+        board = self.get_board_for_project_key()
+        sprints = self.get_sprints_for_board(board)
+        result = []
+        for sprint in sprints:
+            result.extend(self.get_issues_for_sprint(sprint))
+        return result
+
+    def get_issue_frame(self):
+        return DataFrame([i.dict() for i in self.get_issues_for_all_sprints()])
 
     @property
     def api_key(self) -> Optional[str]:
