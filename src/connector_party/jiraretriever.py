@@ -5,7 +5,7 @@ from requests import Session
 from requests.auth import HTTPBasicAuth
 from requests.structures import CaseInsensitiveDict
 
-from schemas import JiraBoard, JiraHistory, JiraIssue, JiraProject, JiraSprint
+from .schemas import JiraBoard, JiraHistory, JiraIssue, JiraProject, JiraSprint
 
 
 class JiraRetriever:
