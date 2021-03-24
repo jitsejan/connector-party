@@ -27,8 +27,10 @@ class JiraIssue(BaseModel):
 
     id: PositiveInt
     key: str = Field(regex=r"^[\w]*-[\d]*$")
+    issuetype: str
+    created: datetime
     description: Optional[str]
-    summmary: Optional[str]
+    summary: Optional[str]
     estimate: Optional[str]
     histories: Optional[List[JiraHistory]]
     project: Optional[str]
