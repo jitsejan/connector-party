@@ -14,6 +14,10 @@ class TestJiraRetriever:
         """ Test the instantiation """
         assert self.subject
 
-    def test_return_something(self):
+    def test_fields_are_prestent(self):
         result = self.subject.get_issue_dataframe()
-        assert len(result) > 0
+        
+        assert 'assignee' in result.columns
+        assert 'status' in result.columns
+        assert 'created' in result.columns
+        assert 'updated' in result.columns

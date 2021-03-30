@@ -127,10 +127,12 @@ class JiraRetriever:
                 issuetype=item["fields"]["issuetype"]["name"],
                 description=item["fields"]["description"],
                 created=item["fields"]["created"],
+                updated=item['fields']['updated'],
                 summary=item["fields"]["summary"],
                 estimate=item["fields"][self.ESTIMATE_FIELD],
                 histories=self._convert_histories(item),
                 project=project.key,
+                status=item['fields']['status']['name'],
             )
             for item in self._get_paginated_json_data(
                 url=url, key="issues", extra_params=extra_params
@@ -151,11 +153,13 @@ class JiraRetriever:
                 issuetype=item["fields"]["issuetype"]["name"],
                 description=item["fields"]["description"],
                 created=item["fields"]["created"],
+                updated=item['fields']['updated'],
                 summary=item["fields"]["summary"],
                 estimate=item["fields"][self.ESTIMATE_FIELD],
                 histories=self._convert_histories(item),
                 project=item["fields"]["project"]["key"],
                 sprint=sprint.name,
+                status=item['fields']['status']['name'],
             )
             for item in self._get_paginated_json_data(
                 url=url, key="issues", extra_params=extra_params

@@ -30,12 +30,14 @@ class JiraIssue(BaseModel):
     assignee: Optional[str]
     issuetype: str
     created: datetime
+    updated: datetime
     description: Optional[str]
     summary: Optional[str]
     estimate: Optional[str]
     histories: Optional[List[JiraHistory]]
     project: Optional[str]
     sprint: Optional[str]
+    status: str
 
 
 class JiraProject(BaseModel):
