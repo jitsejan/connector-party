@@ -1,6 +1,6 @@
 import os
 from typing import Dict, List, Optional, Union
-
+import pandas as pd
 from pandas import DataFrame  # type: ignore
 from requests import Session
 from requests.auth import HTTPBasicAuth
@@ -190,7 +190,10 @@ class JiraRetriever:
         return result
 
     def get_issue_dataframe(self) -> DataFrame:
-        return self._get_dataframe(self.get_issues_for_all_sprints())
+        frame = self._get_dataframe(self.get_issues_for_all_sprints())
+        for col in ['created', 'updated']:
+            frame[col] = pd.to_datetime(frame[col], utc=True)
+        return frame
 
     @property
     def api_key(self) -> Optional[str]:
