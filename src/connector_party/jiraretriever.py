@@ -57,6 +57,12 @@ class JiraRetriever:
             result_list.extend(response[key])
         return result_list
 
+    def _get_assignee(self, item: Dict) -> Union[str, None]:
+        assignee = item["fields"].get("assignee")
+        if assignee:
+            return assignee.get("displayName")
+        return None                
+
     def _get_boards(self) -> List[JiraBoard]:
         url = f"{self.url}/rest/agile/1.0/board"
         return [
@@ -117,7 +123,7 @@ class JiraRetriever:
             JiraIssue(
                 id=item["id"],
                 key=item["key"],
-                assignee=item["fields"]["assignee"]["displayName"],
+                assignee=self._get_assignee(item),
                 issuetype=item["fields"]["issuetype"]["name"],
                 description=item["fields"]["description"],
                 created=item["fields"]["created"],
@@ -141,7 +147,7 @@ class JiraRetriever:
             JiraIssue(
                 id=item["id"],
                 key=item["key"],
-                assignee=item["fields"]["assignee"]["displayName"],
+                assignee=self._get_assignee(item),
                 issuetype=item["fields"]["issuetype"]["name"],
                 description=item["fields"]["description"],
                 created=item["fields"]["created"],
