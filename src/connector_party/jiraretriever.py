@@ -1,5 +1,6 @@
 import os
 from typing import Dict, List, Optional, Union
+
 import pandas as pd
 from pandas import DataFrame  # type: ignore
 from requests import Session
@@ -61,7 +62,7 @@ class JiraRetriever:
         assignee = item["fields"].get("assignee")
         if assignee:
             return assignee.get("displayName")
-        return None                
+        return None
 
     def _get_boards(self) -> List[JiraBoard]:
         url = f"{self.url}/rest/agile/1.0/board"
@@ -127,12 +128,12 @@ class JiraRetriever:
                 issuetype=item["fields"]["issuetype"]["name"],
                 description=item["fields"]["description"],
                 created=item["fields"]["created"],
-                updated=item['fields']['updated'],
+                updated=item["fields"]["updated"],
                 summary=item["fields"]["summary"],
                 estimate=item["fields"][self.ESTIMATE_FIELD],
                 histories=self._convert_histories(item),
                 project=project.key,
-                status=item['fields']['status']['name'],
+                status=item["fields"]["status"]["name"],
             )
             for item in self._get_paginated_json_data(
                 url=url, key="issues", extra_params=extra_params
@@ -153,13 +154,13 @@ class JiraRetriever:
                 issuetype=item["fields"]["issuetype"]["name"],
                 description=item["fields"]["description"],
                 created=item["fields"]["created"],
-                updated=item['fields']['updated'],
+                updated=item["fields"]["updated"],
                 summary=item["fields"]["summary"],
                 estimate=item["fields"][self.ESTIMATE_FIELD],
                 histories=self._convert_histories(item),
                 project=item["fields"]["project"]["key"],
                 sprint=sprint.name,
-                status=item['fields']['status']['name'],
+                status=item["fields"]["status"]["name"],
             )
             for item in self._get_paginated_json_data(
                 url=url, key="issues", extra_params=extra_params
@@ -191,7 +192,7 @@ class JiraRetriever:
 
     def get_issue_dataframe(self) -> DataFrame:
         frame = self._get_dataframe(self.get_issues_for_all_sprints())
-        for col in ['created', 'updated']:
+        for col in ["created", "updated"]:
             frame[col] = pd.to_datetime(frame[col], utc=True)
         return frame
 
