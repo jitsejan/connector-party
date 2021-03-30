@@ -27,14 +27,17 @@ class JiraIssue(BaseModel):
 
     id: PositiveInt
     key: str = Field(regex=r"^[\w]*-[\d]*$")
+    assignee: Optional[str]
     issuetype: str
     created: datetime
+    updated: datetime
     description: Optional[str]
     summary: Optional[str]
     estimate: Optional[str]
     histories: Optional[List[JiraHistory]]
     project: Optional[str]
     sprint: Optional[str]
+    status: str
 
 
 class JiraProject(BaseModel):

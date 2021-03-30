@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connector-party"
-version = "0.2.0"
+version = "0.6.0"
 description = "Package with third-party connectors."
 authors = ["Jitse-Jan <code@jitsejan.com>"]
 license = "BSD"
@@ -9,8 +9,14 @@ license = "BSD"
 python = "^3.9"
 pandas = "^1.2.3"
 pydantic = "^1.8.1"
+requests = "^2.25.1"
 
 [tool.poetry.dev-dependencies]
+pytest = "^6.2.2"
+black = "^20.8b1"
+isort = "^5.8.0"
+flake8 = "^3.9.0"
+mypy = "^0.812"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

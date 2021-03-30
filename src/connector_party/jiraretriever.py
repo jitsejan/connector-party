@@ -1,6 +1,7 @@
 import os
 from typing import Dict, List, Optional, Union
 
+import pandas as pd
 from pandas import DataFrame  # type: ignore
 from requests import Session
 from requests.auth import HTTPBasicAuth
@@ -56,6 +57,12 @@ class JiraRetriever:
             response = self._get_json_data_for_url(url=url, params=params)
             result_list.extend(response[key])
         return result_list
+
+    def _get_assignee(self, item: Dict) -> Union[str, None]:
+        assignee = item["fields"].get("assignee")
+        if assignee:
+            return assignee.get("displayName")
+        return None
 
     def _get_boards(self) -> List[JiraBoard]:
         url = f"{self.url}/rest/agile/1.0/board"
@@ -117,13 +124,16 @@ class JiraRetriever:
             JiraIssue(
                 id=item["id"],
                 key=item["key"],
+                assignee=self._get_assignee(item),
                 issuetype=item["fields"]["issuetype"]["name"],
                 description=item["fields"]["description"],
                 created=item["fields"]["created"],
+                updated=item["fields"]["updated"],
                 summary=item["fields"]["summary"],
                 estimate=item["fields"][self.ESTIMATE_FIELD],
                 histories=self._convert_histories(item),
                 project=project.key,
+                status=item["fields"]["status"]["name"],
             )
             for item in self._get_paginated_json_data(
                 url=url, key="issues", extra_params=extra_params
@@ -140,14 +150,17 @@ class JiraRetriever:
             JiraIssue(
                 id=item["id"],
                 key=item["key"],
+                assignee=self._get_assignee(item),
                 issuetype=item["fields"]["issuetype"]["name"],
                 description=item["fields"]["description"],
                 created=item["fields"]["created"],
+                updated=item["fields"]["updated"],
                 summary=item["fields"]["summary"],
                 estimate=item["fields"][self.ESTIMATE_FIELD],
                 histories=self._convert_histories(item),
                 project=item["fields"]["project"]["key"],
                 sprint=sprint.name,
+                status=item["fields"]["status"]["name"],
             )
             for item in self._get_paginated_json_data(
                 url=url, key="issues", extra_params=extra_params
@@ -178,7 +191,10 @@ class JiraRetriever:
         return result
 
     def get_issue_dataframe(self) -> DataFrame:
-        return self._get_dataframe(self.get_issues_for_all_sprints())
+        frame = self._get_dataframe(self.get_issues_for_all_sprints())
+        for col in ["created", "updated"]:
+            frame[col] = pd.to_datetime(frame[col], utc=True)
+        return frame
 
     @property
     def api_key(self) -> Optional[str]:
