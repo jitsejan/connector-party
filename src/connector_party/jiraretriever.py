@@ -117,6 +117,7 @@ class JiraRetriever:
             JiraIssue(
                 id=item["id"],
                 key=item["key"],
+                assignee=item["fields"]["assignee"]["displayName"],
                 issuetype=item["fields"]["issuetype"]["name"],
                 description=item["fields"]["description"],
                 created=item["fields"]["created"],
@@ -140,6 +141,7 @@ class JiraRetriever:
             JiraIssue(
                 id=item["id"],
                 key=item["key"],
+                assignee=item["fields"]["assignee"]["displayName"],
                 issuetype=item["fields"]["issuetype"]["name"],
                 description=item["fields"]["description"],
                 created=item["fields"]["created"],
