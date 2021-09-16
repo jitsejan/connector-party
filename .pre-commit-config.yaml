@@ -22,9 +22,9 @@ repos:
         name: isort
   - repo: local
     hooks:
-      - id: pytest-check
-        name: pytest-check
-        entry: pytest --cov=. --cov-report=xml --cov-fail-under=20 . -v
+      - id: tox
+        name: tox-check
+        entry: tox .
         language: system
         pass_filenames: false
         always_run: true
