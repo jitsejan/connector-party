@@ -29,6 +29,8 @@ repos:
         pass_filenames: false
         always_run: true
   - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.1.1  # pick a git hash / tag to point to
+    rev: 6.1.1
     hooks:
       - id: pydocstyle
+        name: pydocstyle-check
+        entry: pydocstyle .
