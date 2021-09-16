@@ -35,3 +35,7 @@ repos:
       - id: pydocstyle
         name: pydocstyle-check
         entry: pydocstyle .
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 0.910
+    hooks:
+      - id: mypy
