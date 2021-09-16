@@ -39,7 +39,8 @@ repos:
     hooks:
       - id: mypy
         entry: mypy connector_party --ignore-missing-imports
-  - repo: https://github.com/PyCQA/bandit 
+  - repo: https://github.com/PyCQA/bandit
     rev: 1.7.0
     hooks:
     - id: bandit
+      entry: bandit connector_party -r
