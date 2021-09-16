@@ -2,7 +2,7 @@ import os
 from typing import Dict, List, Optional, Union
 
 import pandas as pd
-from pandas import DataFrame  # type: ignore
+from pandas import DataFrame
 from requests import Session
 from requests.auth import HTTPBasicAuth
 from requests.structures import CaseInsensitiveDict
