@@ -15,12 +15,13 @@ repos:
     rev: 3.9.2
     hooks:
       - id: flake8
+        entry: flake8 connector_party
   - repo: https://github.com/pycqa/isort
     rev: 5.8.0
     hooks:
       - id: isort
         name: isort
-        entry: isort .
+        entry: isort connector_party
   - repo: local
     hooks:
       - id: tox
