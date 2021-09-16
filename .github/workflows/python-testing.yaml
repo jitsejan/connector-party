@@ -1,4 +1,4 @@
-name: Pylint
+name: Python Testing
 
 on: [push]
 
@@ -29,3 +29,8 @@ jobs:
     - name: Test with pytest
       run: |
         poetry run pytest --cov=. --cov-fail-under=24 --cov-report html --cov-report term-missing --cov-report=xml -v
+      with:
+        jira-api-key: ${{ secrets.JIRA_API_KEY }}
+        jira-url: ${{ secrets.JIRA_URL }}
+        jira-user: ${{ secrets.JIRA_USER }}
+        
