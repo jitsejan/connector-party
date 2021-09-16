@@ -1,3 +1,5 @@
+"""Definitions of the different schemas used by the retrievers."""
+
 from datetime import datetime
 from typing import List, Optional
 
@@ -49,7 +51,7 @@ class JiraProject(BaseModel):
 
 
 class JiraSprint(BaseModel):
-    """ Class for a Jira Sprint."""
+    """Class for a Jira Sprint."""
 
     board_id: PositiveInt
     id: PositiveInt

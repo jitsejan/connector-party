@@ -21,6 +21,7 @@ tox = "^3.24.4"
 pre-commit = "^2.15.0"
 pytest-cov = "^2.12.1"
 pydocstyle = "^6.1.1"
+pylint = "^2.11.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

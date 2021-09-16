@@ -11,10 +11,13 @@ from .schemas import JiraBoard, JiraHistory, JiraIssue, JiraProject, JiraSprint
 
 
 class JiraRetriever:
+    """Class to retrieve data from Jira."""
+
     MAX_RESULTS = 100
     ESTIMATE_FIELD = "customfield_11715"
 
     def __init__(self, project_key: str):
+        """Initialize the Jira retriever."""
         self._project_key = project_key
         self._session = self._get_session()
         self._boards = self._get_boards()
