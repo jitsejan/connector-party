@@ -39,3 +39,4 @@ repos:
     rev: v0.910
     hooks:
       - id: mypy
+        entry: mypy connector_party --ignore-missing-imports
