@@ -1,8 +1,8 @@
 import pytest
 
-from src.connector_party.jiraretriever import JiraRetriever
+from connector_party.jiraretriever import JiraRetriever
 
-PROJECT_KEY = "DT"
+PROJECT_KEY = "DTT"
 
 
 class TestJiraRetriever:

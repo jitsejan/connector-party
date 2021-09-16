@@ -1,0 +1,30 @@
+default_language_version:
+  python: python3.9
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: trailing-whitespace
+  - repo: https://github.com/psf/black/
+    rev: 21.5b0
+    hooks:
+      - id: black
+  - repo: https://gitlab.com/pycqa/flake8/
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+  - repo: https://github.com/pycqa/isort
+    rev: 5.8.0
+    hooks:
+      - id: isort
+        name: isort
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: pytest --cov=. --cov-report=xml --cov-fail-under=20 . -v
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -192,8 +192,9 @@ class JiraRetriever:
 
     def get_issue_dataframe(self) -> DataFrame:
         frame = self._get_dataframe(self.get_issues_for_all_sprints())
-        for col in ["created", "updated"]:
-            frame[col] = pd.to_datetime(frame[col], utc=True)
+        if not frame.empty:
+            for col in ["created", "updated"]:
+                frame[col] = pd.to_datetime(frame[col], utc=True)
         return frame
 
     @property
