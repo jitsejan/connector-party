@@ -22,14 +22,6 @@ repos:
     hooks:
       - id: isort
         name: isort
-  - repo: local
-    hooks:
-      - id: tox
-        name: tox-check
-        entry: tox .
-        language: system
-        pass_filenames: false
-        always_run: true
   - repo: https://github.com/pycqa/pydocstyle
     rev: 6.1.1
     hooks:
@@ -40,7 +32,8 @@ repos:
     rev: v0.910
     hooks:
       - id: mypy
-        entry: mypy .
+        name: mypy-check
+        args: [--exclude tests]
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.0
     hooks:
@@ -50,3 +43,11 @@ repos:
       args:
       - -s
       - B404,B603
+  - repo: local
+    hooks:
+      - id: tox
+        name: tox-check
+        entry: tox .
+        language: system
+        pass_filenames: false
+        always_run: true
