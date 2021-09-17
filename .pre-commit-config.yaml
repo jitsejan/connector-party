@@ -5,7 +5,9 @@ repos:
     rev: v3.4.0
     hooks:
       - id: check-merge-conflict
+      - id: check-toml
       - id: debug-statements
+      - id: end-of-file-fixer
       - id: trailing-whitespace
   - repo: https://github.com/psf/black/
     rev: 21.5b0
@@ -43,4 +45,8 @@ repos:
     rev: 1.7.0
     hooks:
     - id: bandit
-      entry: bandit connector_party/ -r
+      language_version: python3
+      exclude: ^tests/
+      args:
+      - -s
+      - B404,B603
