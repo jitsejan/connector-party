@@ -1,20 +1,25 @@
+"""Contains the test for the JiraRetriever class."""
 import pytest
 
-from src.connector_party.jiraretriever import JiraRetriever
+from connector_party.jiraretriever import JiraRetriever
 
-PROJECT_KEY = "DT"
+PROJECT_KEY = "DTT"
 
 
 class TestJiraRetriever:
+    """Defines the test class for the JiraRetriever."""
+
     @pytest.fixture(autouse=True)
     def setup_method(self):
+        """Set up the test class."""
         self.subject = JiraRetriever(project_key=PROJECT_KEY)
 
     def test_instantiate(self):
-        """ Test the instantiation """
+        """Test the instantiation of the JiraRetriever."""
         assert self.subject
 
-    def test_fields_are_prestent(self):
+    def test_fields_are_present(self):
+        """Test expected fields are present in columns."""
         result = self.subject.get_issue_dataframe()
 
         assert "assignee" in result.columns
