@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connector-party"
-version = "0.6.0"
+version = "0.7.0"
 description = "Package with third-party connectors."
 authors = ["Jitse-Jan <code@jitsejan.com>"]
 license = "BSD"
