@@ -3,7 +3,7 @@ import pytest
 
 from connector_party.jiraretriever import JiraRetriever
 
-PROJECT_KEY = "DTT"
+PROJECT_KEY = "INVDP"
 
 
 class TestJiraRetriever:
