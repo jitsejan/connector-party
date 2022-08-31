@@ -4,7 +4,7 @@ from connector_party.jiraretriever import JiraRetriever
 
 def jira_example() -> None:
     """Run example for Jira retrieval."""
-    jira = JiraRetriever(project_key="DTT")
+    jira = JiraRetriever(project_key="XYZ")
     frame = jira.get_issue_dataframe()
     print(frame)
     print(frame.dtypes)

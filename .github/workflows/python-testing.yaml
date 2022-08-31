@@ -19,7 +19,7 @@ jobs:
       run: poetry install
     - name: Analysing the code with pylint
       run: |
-        poetry run pylint `ls -R|grep .py$|xargs`
+        poetry run pylint connector_party
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -35,7 +35,7 @@ jobs:
         JIRA_USER: ${{ secrets.JIRA_USER }}
     - name: Test with pytest
       run: |
-        poetry run pytest --cov=. --cov-fail-under=90 --cov-report html --cov-report term-missing --cov-report=xml -v
+        poetry run pytest --cov=connector_party --cov-fail-under=90 --cov-report html --cov-report term-missing --cov-report=xml -v
       env:
         JIRA_API_KEY: ${{ secrets.JIRA_API_KEY }}
         JIRA_URL: ${{ secrets.JIRA_URL }}

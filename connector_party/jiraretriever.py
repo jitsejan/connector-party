@@ -14,8 +14,7 @@ from .schemas import JiraBoard, JiraHistory, JiraIssue, JiraProject, JiraSprint
 class JiraRetriever:
     """Class to retrieve data from Jira."""
 
-    MAX_RESULTS = 100
-    ESTIMATE_FIELD = "customfield_11715"
+    MAX_RESULTS = 50
 
     def __init__(self, project_key: str):
         """Initialize the Jira retriever."""
@@ -42,14 +41,18 @@ class JiraRetriever:
         response = self._get_json_data_for_url(url, params)
         return response.get("total", 1)
 
-    def _get_json_data_for_url(self, url: str, params: Dict = {}) -> Dict:
+    def _get_json_data_for_url(self, url: str, params=None) -> Dict:
         """Return JSON data for a given url and its parameters."""
+        if params is None:
+            params = {}
         return self.session.get(url=url, params=params).json()
 
     def _get_paginated_json_data(
-        self, url: str, key: str = "values", extra_params: dict = {}
+        self, url: str, key: str = "values", extra_params=None
     ) -> List[Dict]:
         """Return the JSON data for a paginated page."""
+        if extra_params is None:
+            extra_params = {}
         num_results = self._get_num_results(url=url)
         result_list = []
         params = {
@@ -81,7 +84,7 @@ class JiraRetriever:
             JiraBoard(
                 id=int(item["id"]),
                 name=item["name"],
-                project_key=item["location"]["projectKey"],
+                project_key=self._get_project_key_for_item(item)
             )
             for item in self._get_paginated_json_data(url=url)
         ]
@@ -111,7 +114,7 @@ class JiraRetriever:
         """Convert a dictionary to a list of Jira History items."""
         try:
             histories = item["changelog"]["histories"]
-        except Exception:
+        except KeyError:
             return []
         else:
             return [
@@ -142,7 +145,6 @@ class JiraRetriever:
                 created=item["fields"]["created"],
                 updated=item["fields"]["updated"],
                 summary=item["fields"]["summary"],
-                estimate=item["fields"][self.ESTIMATE_FIELD],
                 histories=self._convert_histories(item),
                 project=project.key,
                 status=item["fields"]["status"]["name"],
@@ -170,7 +172,6 @@ class JiraRetriever:
                 created=item["fields"]["created"],
                 updated=item["fields"]["updated"],
                 summary=item["fields"]["summary"],
-                estimate=item["fields"][self.ESTIMATE_FIELD],
                 histories=self._convert_histories(item),
                 project=item["fields"]["project"]["key"],
                 sprint=sprint.name,
@@ -213,6 +214,13 @@ class JiraRetriever:
             for col in ["created", "updated"]:
                 frame[col] = pd.to_datetime(frame[col], utc=True)
         return frame
+
+    @staticmethod
+    def _get_project_key_for_item(item: dict) -> str:
+        try:
+            return item["location"]["projectKey"]
+        except KeyError:
+            return ""
 
     @property
     def api_key(self) -> Optional[str]:
