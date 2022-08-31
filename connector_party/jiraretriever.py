@@ -14,8 +14,7 @@ from .schemas import JiraBoard, JiraHistory, JiraIssue, JiraProject, JiraSprint
 class JiraRetriever:
     """Class to retrieve data from Jira."""
 
-    MAX_RESULTS = 100
-    ESTIMATE_FIELD = "customfield_11715"
+    MAX_RESULTS = 50
 
     def __init__(self, project_key: str):
         """Initialize the Jira retriever."""
@@ -81,7 +80,7 @@ class JiraRetriever:
             JiraBoard(
                 id=int(item["id"]),
                 name=item["name"],
-                project_key=item["location"]["projectKey"],
+                project_key=self._get_project_key_for_item(item)
             )
             for item in self._get_paginated_json_data(url=url)
         ]
@@ -142,7 +141,6 @@ class JiraRetriever:
                 created=item["fields"]["created"],
                 updated=item["fields"]["updated"],
                 summary=item["fields"]["summary"],
-                estimate=item["fields"][self.ESTIMATE_FIELD],
                 histories=self._convert_histories(item),
                 project=project.key,
                 status=item["fields"]["status"]["name"],
@@ -170,7 +168,6 @@ class JiraRetriever:
                 created=item["fields"]["created"],
                 updated=item["fields"]["updated"],
                 summary=item["fields"]["summary"],
-                estimate=item["fields"][self.ESTIMATE_FIELD],
                 histories=self._convert_histories(item),
                 project=item["fields"]["project"]["key"],
                 sprint=sprint.name,
@@ -213,6 +210,13 @@ class JiraRetriever:
             for col in ["created", "updated"]:
                 frame[col] = pd.to_datetime(frame[col], utc=True)
         return frame
+
+    @staticmethod
+    def _get_project_key_for_item(item: dict) -> str:
+        try:
+            return item["location"]["projectKey"]
+        except Exception as e:
+            return ""
 
     @property
     def api_key(self) -> Optional[str]:
