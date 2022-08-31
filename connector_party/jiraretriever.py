@@ -41,14 +41,18 @@ class JiraRetriever:
         response = self._get_json_data_for_url(url, params)
         return response.get("total", 1)
 
-    def _get_json_data_for_url(self, url: str, params: Dict = {}) -> Dict:
+    def _get_json_data_for_url(self, url: str, params=None) -> Dict:
         """Return JSON data for a given url and its parameters."""
+        if params is None:
+            params = {}
         return self.session.get(url=url, params=params).json()
 
     def _get_paginated_json_data(
-        self, url: str, key: str = "values", extra_params: dict = {}
+        self, url: str, key: str = "values", extra_params=None
     ) -> List[Dict]:
         """Return the JSON data for a paginated page."""
+        if extra_params is None:
+            extra_params = {}
         num_results = self._get_num_results(url=url)
         result_list = []
         params = {
@@ -110,7 +114,7 @@ class JiraRetriever:
         """Convert a dictionary to a list of Jira History items."""
         try:
             histories = item["changelog"]["histories"]
-        except Exception:
+        except KeyError:
             return []
         else:
             return [
@@ -215,7 +219,7 @@ class JiraRetriever:
     def _get_project_key_for_item(item: dict) -> str:
         try:
             return item["location"]["projectKey"]
-        except Exception as e:
+        except KeyError:
             return ""
 
     @property
