@@ -16,13 +16,16 @@ class JiraRetriever:
 
     MAX_RESULTS = 50
 
-    def __init__(self, project_key: str):
+    def __init__(self, project_key: str, sprint_field: str = None):
         """Initialize the Jira retriever."""
         self._project_key = project_key
+        self._sprint_field = sprint_field
         self._session = self._get_session()
         self._boards = self._get_boards()
         self._projects = self._get_projects()
         self._project = self.get_project_for_project_key()
+        board = self.get_board_for_project_key()
+        self._sprints = self.get_sprints_for_board(board=board)
 
     def _get_session(self) -> Session:
         """Return a session with headers and auth set."""
@@ -109,6 +112,13 @@ class JiraRetriever:
             project_key = self.project_key
         return next(p for p in self.projects if p.key == project_key)
 
+    def _get_sprints(self, item: dict) -> List[int]:
+        sprints = []
+        if item["fields"][self.sprint_field] is not None:
+            for sprint in item['fields'].get(self.sprint_field):
+                sprints.append(sprint.get("id"))
+        return sprints
+
     @classmethod
     def _convert_histories(cls, item: Dict) -> List[JiraHistory]:
         """Convert a dictionary to a list of Jira History items."""
@@ -128,7 +138,6 @@ class JiraRetriever:
                 for h in histories
                 for elem in h["items"]
             ]
-
     def get_issues_for_project(self, project: JiraProject = None) -> List[JiraIssue]:
         """Return a list of Jira issues for a given Jira project."""
         extra_params = {"expand": "changelog"}
@@ -145,7 +154,8 @@ class JiraRetriever:
                 created=item["fields"]["created"],
                 updated=item["fields"]["updated"],
                 summary=item["fields"]["summary"],
-                histories=self._convert_histories(item),
+                # histories=self._convert_histories(item),
+                sprints=self._get_sprints(item),
                 project=project.key,
                 status=item["fields"]["status"]["name"],
             )
@@ -156,31 +166,7 @@ class JiraRetriever:
 
     def get_issue_frame_for_project(self, project: JiraProject = None) -> DataFrame:
         """Return a dataframe with Jira issues for a given Jira project."""
-        return DataFrame([i.dict() for i in self.get_issues_for_project(project)])
-
-    def get_issues_for_sprint(self, sprint: JiraSprint) -> List[JiraIssue]:
-        """Return a list of issues for a given Jira sprint."""
-        extra_params = {"expand": "changelog"}
-        url = f"{self.url}/rest/agile/1.0/sprint/{sprint.id}/issue"
-        return [
-            JiraIssue(
-                id=item["id"],
-                key=item["key"],
-                assignee=self._get_assignee(item),
-                issuetype=item["fields"]["issuetype"]["name"],
-                description=item["fields"]["description"],
-                created=item["fields"]["created"],
-                updated=item["fields"]["updated"],
-                summary=item["fields"]["summary"],
-                histories=self._convert_histories(item),
-                project=item["fields"]["project"]["key"],
-                sprint=sprint.name,
-                status=item["fields"]["status"]["name"],
-            )
-            for item in self._get_paginated_json_data(
-                url=url, key="issues", extra_params=extra_params
-            )
-        ]
+        return self._get_dataframe(self.get_issues_for_project(project=project))
 
     def get_sprints_for_board(self, board: JiraBoard) -> List[JiraSprint]:
         """Return the sprints for a given Jira board."""
@@ -194,24 +180,24 @@ class JiraRetriever:
                 start_date=item["startDate"],
                 end_date=item["endDate"],
                 complete_date=item.get("completeDate"),
+                goal=item.get("goal")
             )
             for item in self._get_paginated_json_data(url=url)
         ]
 
-    def get_issues_for_all_sprints(self) -> List[JiraIssue]:
-        """Return a list of issues for all sprints."""
-        board = self.get_board_for_project_key()
-        sprints = self.get_sprints_for_board(board=board)
-        result = []
-        for sprint in sprints:
-            result.extend(self.get_issues_for_sprint(sprint=sprint))
-        return result
-
     def get_issue_dataframe(self) -> DataFrame:
         """Return a dataframe with Jira issues."""
-        frame = self._get_dataframe(self.get_issues_for_all_sprints())
+        frame = self.get_issue_frame_for_project(project=self.project)
         if not frame.empty:
             for col in ["created", "updated"]:
+                frame[col] = pd.to_datetime(frame[col], utc=True)
+        return frame
+
+    def get_sprint_dataframe(self) -> DataFrame:
+        """Return a dataframe with Jira sprints."""
+        frame = self._get_dataframe(self.sprints)
+        if not frame.empty:
+            for col in ["start_date", "end_date", "complete_date"]:
                 frame[col] = pd.to_datetime(frame[col], utc=True)
         return frame
 
@@ -256,6 +242,15 @@ class JiraRetriever:
     def session(self) -> Session:
         """Return session to execute Jira API calls."""
         return self._session
+
+    @property
+    def sprint_field(self) -> str:
+        """Return sprint field within the Jira issues."""
+        return self._sprint_field
+    @property
+    def sprints(self) -> List[JiraSprint]:
+        """Return list of Jira projects."""
+        return self._sprints
 
     @property
     def url(self) -> Optional[str]:

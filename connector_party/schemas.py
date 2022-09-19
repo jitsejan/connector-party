@@ -38,8 +38,9 @@ class JiraIssue(BaseModel):
     estimate: Optional[str]
     histories: Optional[List[JiraHistory]]
     project: Optional[str]
-    sprint: Optional[str]
+    sprints: Optional[List[str]]
     status: str
+
 
 
 class JiraProject(BaseModel):
@@ -60,3 +61,4 @@ class JiraSprint(BaseModel):
     start_date: Optional[datetime]
     end_date: Optional[datetime]
     complete_date: Optional[datetime]
+    goal: str
