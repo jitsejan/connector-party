@@ -42,7 +42,6 @@ class JiraIssue(BaseModel):
     status: str
 
 
-
 class JiraProject(BaseModel):
     """Class for a Jira Project."""
 

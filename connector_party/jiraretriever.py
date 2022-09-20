@@ -75,7 +75,10 @@ class JiraRetriever:
 
     def _get_assignee(self, item: Dict) -> Union[str, None]:
         """Return the assignee if it is set."""
-        if "assignee" in item["versionedRepresentations"].keys() and item["versionedRepresentations"]["assignee"]["1"] is not None:
+        if (
+            "assignee" in item["versionedRepresentations"].keys()
+            and item["versionedRepresentations"]["assignee"]["1"] is not None
+        ):
             return item["versionedRepresentations"]["assignee"]["1"]["displayName"]
         return None
 
@@ -86,7 +89,7 @@ class JiraRetriever:
             JiraBoard(
                 id=int(item["id"]),
                 name=item["name"],
-                project_key=self._get_project_key_for_item(item)
+                project_key=self._get_project_key_for_item(item),
             )
             for item in self._get_paginated_json_data(url=url)
         ]
@@ -113,10 +116,18 @@ class JiraRetriever:
 
     def _get_sprints(self, item: dict) -> List[int]:
         sprints = []
-        if self.sprint_field and item["versionedRepresentations"][self.sprint_field] is not None:
-            for key in item['versionedRepresentations'].get(self.sprint_field):
-                if item['versionedRepresentations'].get(self.sprint_field).get(key) is not None:
-                    for sprint in item['versionedRepresentations'].get(self.sprint_field).get(key):
+        if (
+            self.sprint_field
+            and item["versionedRepresentations"][self.sprint_field] is not None
+        ):
+            for key in item["versionedRepresentations"].get(self.sprint_field):
+                if (
+                    item["versionedRepresentations"].get(self.sprint_field).get(key)
+                    is not None
+                ):
+                    for sprint in (
+                        item["versionedRepresentations"].get(self.sprint_field).get(key)
+                    ):
                         sprints.append(sprint.get("id"))
         return sprints
 
@@ -139,6 +150,7 @@ class JiraRetriever:
                 for h in histories
                 for elem in h["items"]
             ]
+
     def get_issues_for_project(self, project: JiraProject = None) -> List[JiraIssue]:
         """Return a list of Jira issues for a given Jira project."""
         extra_params = {"expand": "changelog,versionedRepresentations,renderedFields"}
@@ -181,7 +193,7 @@ class JiraRetriever:
                 start_date=item["startDate"],
                 end_date=item["endDate"],
                 complete_date=item.get("completeDate"),
-                goal=item.get("goal")
+                goal=item.get("goal"),
             )
             for item in self._get_paginated_json_data(url=url)
         ]
@@ -248,6 +260,7 @@ class JiraRetriever:
     def sprint_field(self) -> str:
         """Return sprint field within the Jira issues."""
         return self._sprint_field
+
     @property
     def sprints(self) -> List[JiraSprint]:
         """Return list of Jira projects."""
