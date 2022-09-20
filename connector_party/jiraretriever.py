@@ -113,7 +113,7 @@ class JiraRetriever:
 
     def _get_sprints(self, item: dict) -> List[int]:
         sprints = []
-        if item["versionedRepresentations"][self.sprint_field] is not None:
+        if self.sprint_field and item["versionedRepresentations"][self.sprint_field] is not None:
             for key in item['versionedRepresentations'].get(self.sprint_field):
                 if item['versionedRepresentations'].get(self.sprint_field).get(key) is not None:
                     for sprint in item['versionedRepresentations'].get(self.sprint_field).get(key):
