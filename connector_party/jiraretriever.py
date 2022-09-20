@@ -167,7 +167,6 @@ class JiraRetriever:
                 created=item["versionedRepresentations"]["created"]["1"],
                 updated=item["versionedRepresentations"]["updated"]["1"],
                 summary=item["versionedRepresentations"]["summary"]["1"],
-                # histories=self._convert_histories(item), # TODO Move to own table
                 sprints=self._get_sprints(item),
                 project=project.key,
                 status=item["versionedRepresentations"]["status"]["1"]["name"],
