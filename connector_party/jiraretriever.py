@@ -75,9 +75,8 @@ class JiraRetriever:
 
     def _get_assignee(self, item: Dict) -> Union[str, None]:
         """Return the assignee if it is set."""
-        assignee = item["fields"].get("assignee")
-        if assignee:
-            return assignee.get("displayName")
+        if "assignee" in item["versionedRepresentations"].keys() and item["versionedRepresentations"]["assignee"]["1"] is not None:
+            return item["versionedRepresentations"]["assignee"]["1"]["displayName"]
         return None
 
     def _get_boards(self) -> List[JiraBoard]:
@@ -94,7 +93,7 @@ class JiraRetriever:
 
     def _get_projects(self) -> List[JiraProject]:
         """Return a list of Jira projects."""
-        url = f"{self.url}/rest/api/3/project/search"
+        url = f"{self.url}/rest/api/2/project/search"
         return [
             JiraProject(id=int(item["id"]), key=item["key"], name=item["name"])
             for item in self._get_paginated_json_data(url=url)
@@ -114,9 +113,11 @@ class JiraRetriever:
 
     def _get_sprints(self, item: dict) -> List[int]:
         sprints = []
-        if item["fields"][self.sprint_field] is not None:
-            for sprint in item['fields'].get(self.sprint_field):
-                sprints.append(sprint.get("id"))
+        if item["versionedRepresentations"][self.sprint_field] is not None:
+            for key in item['versionedRepresentations'].get(self.sprint_field):
+                if item['versionedRepresentations'].get(self.sprint_field).get(key) is not None:
+                    for sprint in item['versionedRepresentations'].get(self.sprint_field).get(key):
+                        sprints.append(sprint.get("id"))
         return sprints
 
     @classmethod
@@ -140,7 +141,7 @@ class JiraRetriever:
             ]
     def get_issues_for_project(self, project: JiraProject = None) -> List[JiraIssue]:
         """Return a list of Jira issues for a given Jira project."""
-        extra_params = {"expand": "changelog"}
+        extra_params = {"expand": "changelog,versionedRepresentations,renderedFields"}
         if not project:
             project = self.project
         url = f"{self.url}/rest/api/2/search?jql=project={project.key}"
@@ -149,15 +150,15 @@ class JiraRetriever:
                 id=item["id"],
                 key=item["key"],
                 assignee=self._get_assignee(item),
-                issuetype=item["fields"]["issuetype"]["name"],
-                description=item["fields"]["description"],
-                created=item["fields"]["created"],
-                updated=item["fields"]["updated"],
-                summary=item["fields"]["summary"],
-                # histories=self._convert_histories(item),
+                issuetype=item["versionedRepresentations"]["issuetype"]["1"]["name"],
+                description=item["versionedRepresentations"]["description"]["1"],
+                created=item["versionedRepresentations"]["created"]["1"],
+                updated=item["versionedRepresentations"]["updated"]["1"],
+                summary=item["versionedRepresentations"]["summary"]["1"],
+                # histories=self._convert_histories(item), # TODO Move to own table
                 sprints=self._get_sprints(item),
                 project=project.key,
-                status=item["fields"]["status"]["name"],
+                status=item["versionedRepresentations"]["status"]["1"]["name"],
             )
             for item in self._get_paginated_json_data(
                 url=url, key="issues", extra_params=extra_params
