@@ -1,20 +1,30 @@
 """Definitions of the different schemas used by the retrievers."""
-
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, PositiveInt
+from sqlmodel import Field, Relationship, SQLModel
 
 
-class JiraBoard(BaseModel):
+class JiraIssueSprintLink(SQLModel, table=True):
+    """Class for the link between Jira Issue and Sprint."""
+
+    issue_id: Optional[int] = Field(
+        default=None, foreign_key="jiraissue.id", primary_key=True
+    )
+    sprint_id: Optional[int] = Field(
+        default=None, foreign_key="jirasprint.id", primary_key=True
+    )
+
+
+class JiraBoard(SQLModel, table=True):
     """Class for a Jira Board."""
 
-    id: int
+    id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     project_key: str
 
 
-class JiraHistory(BaseModel):
+class JiraHistory(SQLModel, table=False):
     """Class for a Jira history item."""
 
     author: str
@@ -24,10 +34,10 @@ class JiraHistory(BaseModel):
     new: Optional[str]
 
 
-class JiraIssue(BaseModel):
+class JiraIssue(SQLModel, table=True):
     """Class for a Jira Issue."""
 
-    id: PositiveInt
+    id: Optional[int] = Field(default=None, primary_key=True)
     key: str = Field(regex=r"^[\w]*-[\d]*$")
     assignee: Optional[str]
     issuetype: str
@@ -36,28 +46,36 @@ class JiraIssue(BaseModel):
     description: Optional[str]
     summary: Optional[str]
     estimate: Optional[str]
-    histories: Optional[List[JiraHistory]]
-    project: Optional[str]
-    sprints: Optional[List[str]]
+    # histories: Optional[List[JiraHistory]]
+    # project: Optional[str] = Relationship(back_populates="jira")
     status: str
 
+    sprints: List["JiraSprint"] = Relationship(
+        back_populates="issues", link_model=JiraIssueSprintLink
+    )
 
-class JiraProject(BaseModel):
+
+class JiraProject(SQLModel, table=True):
     """Class for a Jira Project."""
 
-    id: PositiveInt
+    id: Optional[int] = Field(default=None, primary_key=True)
     key: str
     name: str
+    # issues: List[""]
 
 
-class JiraSprint(BaseModel):
+class JiraSprint(SQLModel, table=True):
     """Class for a Jira Sprint."""
 
-    board_id: PositiveInt
-    id: PositiveInt
+    id: Optional[int] = Field(default=None, primary_key=True)
+    board_id: int
     name: str
     state: str
     start_date: Optional[datetime]
     end_date: Optional[datetime]
     complete_date: Optional[datetime]
     goal: str
+
+    issues: List["JiraIssue"] = Relationship(
+        back_populates="sprints", link_model=JiraIssueSprintLink
+    )

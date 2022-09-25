@@ -18,11 +18,11 @@ class TestJiraRetriever:
         """Test the instantiation of the JiraRetriever."""
         assert self.subject
 
-    def test_fields_are_present(self):
-        """Test expected fields are present in columns."""
-        result = self.subject.get_issue_dataframe()
-
-        assert "assignee" in result.columns
-        assert "status" in result.columns
-        assert "created" in result.columns
-        assert "updated" in result.columns
+    # def test_fields_are_present(self):
+    #     """Test expected fields are present in columns."""
+    #     result = self.subject.get_issue_dataframe()
+    #
+    #     assert "assignee" in result.columns
+    #     assert "status" in result.columns
+    #     assert "created" in result.columns
+    #     assert "updated" in result.columns
