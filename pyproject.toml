@@ -12,6 +12,7 @@ pydantic = "^1.10.0"
 requests = "^2.25.1"
 typed-ast = "^1.5.4"
 pydocstyle = {extras = ["toml"], version = "^6.1.1"}
+sqlmodel = "^0.0.8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"
