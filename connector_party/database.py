@@ -6,4 +6,4 @@ SQLITE_URL = (
     f"sqlite:////Users/jitsejan/code/personal/connector-party/{SQLITE_FILE_NAME}"
 )
 
-engine = create_engine(SQLITE_URL, echo=True)
+engine = create_engine(SQLITE_URL, echo=False)

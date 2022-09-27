@@ -2,7 +2,6 @@
 import os
 from typing import Dict, List, Optional, Union
 
-import pandas as pd
 from pandas import DataFrame
 from requests import Session
 from requests.auth import HTTPBasicAuth
@@ -22,10 +21,10 @@ class JiraRetriever:
         self._sprint_field = sprint_field
         self._session = self._get_session()
         self._boards = self._get_boards()
+        self._board = self._get_board_for_project_key()
+        self._sprints = self.get_sprints_for_board(board=self.board)
         self._projects = self._get_projects()
-        self._project = self.get_project_for_project_key()
-        board = self.get_board_for_project_key()
-        self._sprints = self.get_sprints_for_board(board=board)
+        self._project = self._get_project_for_project_key()
 
     def _get_session(self) -> Session:
         """Return a session with headers and auth set."""
@@ -33,10 +32,6 @@ class JiraRetriever:
         session.headers = self.headers
         session.auth = HTTPBasicAuth(self.user, self.api_key)
         return session
-
-    def _get_dataframe(self, inputlist: List) -> DataFrame:
-        """Return a dataframe converting the issues."""
-        return DataFrame([i.dict() for i in inputlist])
 
     def _get_num_results(self, url: str) -> int:
         """Return the number of total results."""
@@ -102,13 +97,13 @@ class JiraRetriever:
             for item in self._get_paginated_json_data(url=url)
         ]
 
-    def get_board_for_project_key(self, project_key: str = None) -> JiraBoard:
+    def _get_board_for_project_key(self, project_key: str = None) -> JiraBoard:
         """Return the board for a given project key."""
         if not project_key:
             project_key = self.project_key
         return next(b for b in self.boards if b.project_key == project_key)
 
-    def get_project_for_project_key(self, project_key: str = None) -> JiraProject:
+    def _get_project_for_project_key(self, project_key: str = None) -> JiraProject:
         """Return the project for a given project key."""
         if not project_key:
             project_key = self.project_key
@@ -168,7 +163,7 @@ class JiraRetriever:
                 updated=item["versionedRepresentations"]["updated"]["1"],
                 summary=item["versionedRepresentations"]["summary"]["1"],
                 sprints=self._get_sprints(item),
-                project=project.key,
+                project=self.project,
                 status=item["versionedRepresentations"]["status"]["1"]["name"],
             )
             for item in self._get_paginated_json_data(
@@ -178,7 +173,7 @@ class JiraRetriever:
 
     def get_issue_frame_for_project(self, project: JiraProject = None) -> DataFrame:
         """Return a dataframe with Jira issues for a given Jira project."""
-        return self._get_dataframe(self.get_issues_for_project(project=project))
+        return self._get_dataframe()
 
     def get_sprints_for_board(self, board: JiraBoard) -> List[JiraSprint]:
         """Return the sprints for a given Jira board."""
@@ -197,22 +192,6 @@ class JiraRetriever:
             for item in self._get_paginated_json_data(url=url)
         ]
 
-    def get_issue_dataframe(self) -> DataFrame:
-        """Return a dataframe with Jira issues."""
-        frame = self.get_issue_frame_for_project(project=self.project)
-        if not frame.empty:
-            for col in ["created", "updated"]:
-                frame[col] = pd.to_datetime(frame[col], utc=True)
-        return frame
-
-    def get_sprint_dataframe(self) -> DataFrame:
-        """Return a dataframe with Jira sprints."""
-        frame = self._get_dataframe(self.sprints)
-        if not frame.empty:
-            for col in ["start_date", "end_date", "complete_date"]:
-                frame[col] = pd.to_datetime(frame[col], utc=True)
-        return frame
-
     @staticmethod
     def _get_project_key_for_item(item: dict) -> str:
         try:
@@ -220,10 +199,20 @@ class JiraRetriever:
         except KeyError:
             return ""
 
+    @staticmethod
+    def _get_dataframe(input_list: List) -> DataFrame:
+        """Return a dataframe converting the issues."""
+        return DataFrame([i.dict() for i in input_list])
+
     @property
     def api_key(self) -> Optional[str]:
         """Return API key to access Jira."""
         return os.getenv("JIRA_API_KEY")
+
+    @property
+    def board(self) -> JiraBoard:
+        """Return selected Jira board."""
+        return self._board
 
     @property
     def boards(self) -> List[JiraBoard]:
